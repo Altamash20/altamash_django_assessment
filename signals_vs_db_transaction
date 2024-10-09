@@ -1,1 +1,44 @@
+from django.conf import settings
 
+
+# Create your models here.
+# signals imports
+from django.dispatch import receiver
+from django.db.models.signals import (
+    pre_save,
+    post_save
+)
+
+if not settings.configured:
+    settings.configure()
+User = settings.AUTH_USER_MODEL
+
+
+
+'''creating receiver function to receive 
+signal before the user is registered'''
+@receiver(pre_save, sender=User)
+def user_pre_save_receiver(sender, instance, *args, **kwargs):
+    print(instance.username, instance.id)
+    '''django signal is sent in any case for example whether the 
+    user is created in database or not. If username or id is 
+    not registered, the value return is none. It means django signals run independently of
+    whether database transaction(here it is CREATE) is successful or not '''
+    
+
+
+'''creating receiver function to receive 
+signal after the user is registered'''
+@receiver(post_save, sender=User)            
+def user_post_save_receiver(sender, instance, created, *args, **kwargs):
+    if created:
+        print("Send email to", instance.username)
+    else:
+        print(instance.username, "was just saved")
+
+
+
+'''Here, in case of user_pre_saved_receiver, it might 
+returns id or username as None if the data is not saved in database.
+It means execution of signals depends on each other and bydefault,
+signals execute synchronously.'''
