@@ -1,1 +1,7 @@
+class Rectangle:
+    length = int(input("Enter length:"))
+    width = int(input("Enter width"))
 
+rect1 = Rectangle()
+print({'length' : rect1.length}, 
+      {'width' : rect1.width})
