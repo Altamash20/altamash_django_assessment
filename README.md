@@ -1,1 +1,1 @@
-# altamash_django_assessment
+# assessment on 1)Django Signals and 2)Custom classes in Python
