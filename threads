@@ -1,1 +1,56 @@
+from django.conf import settings
+import threading
 
+
+# Create your models here.
+# signals imports
+from django.dispatch import receiver
+from django.db.models.signals import (
+    pre_save,
+    post_save
+)
+
+if not settings.configured:
+    settings.configure()
+User = settings.AUTH_USER_MODEL
+
+
+
+'''creating receiver function to receive 
+signal before the user is registered'''
+def user_pre_save_receiver(sender, instance, *args, **kwargs):
+    print(instance.username, instance.id)
+pre_save.connect(user_pre_save_receiver, sender=User)
+    
+
+
+'''creating receiver function to receive 
+signal after the user is registered'''          
+def user_post_save_receiver(sender, instance, created, *args, **kwargs):
+    if created:
+        print("Send email to", instance.username)
+    else:
+        print(instance.username, "was just saved")
+post_save.connect(user_post_save_receiver, sender=User)
+
+
+t1 = threading.Thread(target = pre_save.connect(user_pre_save_receiver, sender=User))
+t2 = threading.Thread(target=user_pre_save_receiver, args=())
+t3 = threading.Thread(target = post_save.connect(user_post_save_receiver, sender=User))
+t4 = threading.Thread(target=user_post_save_receiver, args=())
+
+t1.start()  # start thread t1, throw it aside in the background and keep executing below script
+t2.start()  # start thread t2, throw it aside in the background and keep executing below script
+t3.start()  # start thread t3, throw it aside in the background and keep executing below script
+t4.start()  # start thread t4, throw it aside in the background and keep executing below script
+
+t1.join()   # wait till t1 finished
+t2.join()   # wait till t2 finished
+t3.join()   # wait till t3 finished
+t4.join()   # wait till t4 finished
+
+print("Done!")
+
+
+'''Here the django signals and caller occur in multiple threads. As per mentioned, 
+single thread or multiple thread is created'''
